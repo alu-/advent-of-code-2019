@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 def main():
-    with open("./inputs/day2.txt") as f:
-        input = f.read()
+    with open("./inputs/day2.txt") as file:
+        raw_input = file.read()
 
-    instructions = parse_intcode_into_instructions(input)
+    instructions = parse_intcode_into_instructions(raw_input)
     mutated_instructions = run_instructions(instructions)
     print(get_answer(mutated_instructions))
 
@@ -30,21 +30,29 @@ def restore_state(state):
 
 
 def run_instructions(instructions):
-    for x in range(0, len(instructions)):
-        instruction = instructions[x]
+    for index, _ in enumerate(instructions):
+        instruction = instructions[index]
         opcode = instruction[0]
         if opcode == 1:
-            x = get_instruction_value_at_address(instructions, instruction[1])
-            y = get_instruction_value_at_address(instructions, instruction[2])
-            instructions = set_instruction_value_at_address(instructions, x + y, instruction[3])
+            new_value = get_instruction_value_at_address(
+                instructions, instruction[1]
+            ) + get_instruction_value_at_address(
+                instructions, instruction[2]
+            )
+            instructions = set_instruction_value_at_address(instructions, new_value, instruction[3])
         elif opcode == 2:
-            x = get_instruction_value_at_address(instructions, instruction[1])
-            y = get_instruction_value_at_address(instructions, instruction[2])
-            instructions = set_instruction_value_at_address(instructions, x * y, instruction[3])
+            new_value = get_instruction_value_at_address(
+                instructions, instruction[1]
+            ) * get_instruction_value_at_address(
+                instructions, instruction[2]
+            )
+            instructions = set_instruction_value_at_address(instructions, new_value, instruction[3])
         elif opcode == 99:
             return instructions
         else:
             raise ValueError("Unhandled opcode: {}".format(opcode))
+
+    return []
 
 
 def get_instruction_value_at_address(instructions, address):
@@ -53,10 +61,10 @@ def get_instruction_value_at_address(instructions, address):
 
 def set_instruction_value_at_address(instructions, value, address):
     address_counter = 0
-    for i, instruction in enumerate(instructions):
-        for p, position in enumerate(instruction):
+    for line_index, instruction in enumerate(instructions):
+        for position_index, _ in enumerate(instruction):
             if address_counter == address:
-                instructions[i][p] = value
+                instructions[line_index][position_index] = value
                 return instructions
             address_counter += 1
 

@@ -3,12 +3,12 @@ from math import floor
 
 
 def main():
-    with open("./inputs/day1.txt") as f:
-        lines = f.read().splitlines()
+    with open("./inputs/day1.txt") as file:
+        lines = file.read().splitlines()
 
     answer = 0
-    for l in lines:
-        answer += calculate_fuel_for_mass(int(l))
+    for line in lines:
+        answer += calculate_fuel_for_mass(int(line))
 
     print(answer)
 
