@@ -20,9 +20,14 @@ class Instruction(Enum):
         return self.value
 
 class Machine():
-    def __init__(self, program, debug=False):
+    def __init__(self, program, debug=False, interactive=True, stdin=None):
         self.program = self._parse(program)
         self.debug = debug
+        self.interactive = interactive
+        self.stdin = stdin
+        self.stdout = ""
+        self.paused = False
+        self.finished = False
         self.pointer = 0
 
     @staticmethod
@@ -42,6 +47,32 @@ class Machine():
 
     def _is_debug(self):
         return self.debug
+
+    def _is_interactive(self):
+        return self.interactive
+
+    def _set_stdout(self, stdout):
+        self.stdout += str(stdout)
+
+    def get_stdout(self):
+        out = self.stdout
+        self.stdout = ""
+        return out
+
+    def _has_input(self):
+        return len(self.stdin) > 0
+
+    def _pause_execution(self, state=True):
+        self.paused = state
+
+    def _is_paused(self):
+        return self.paused
+
+    def is_finished(self):
+        return self.finished
+
+    def give_stdin(self, stdin):
+        self.stdin.append(stdin)
 
     def dump_memory(self, heading):
         os.remove("memory.csv")
@@ -138,9 +169,22 @@ class Machine():
                     print("\t{} * {} = {}".format(parameters[0], parameters[1], parameters[0] * parameters[1]))
                 self._set_instruction(parameters[2], parameters[0] * parameters[1])
             elif instruction is Instruction.INPUT:
-                self._set_instruction(parameters[0], int(input("Please give an input: ")))
+                if self._is_interactive():
+                    self._set_instruction(parameters[0], int(input("Please give an input: ")))
+                else:
+                    if not self._has_input():
+                        if self._is_debug():
+                            print("Halted execution")
+                        return self._pause_execution()
+                    else:
+                        stdin = self.stdin[0]
+                        del self.stdin[0]
+                        self._set_instruction(parameters[0], stdin)
             elif instruction is Instruction.PRINT:
-                print(parameters[0])
+                if self._is_interactive():
+                    print(parameters[0])
+                else:
+                    self._set_stdout(parameters[0])
             elif instruction is Instruction.JUMP_POSITIVE:
                 if parameters[0]:
                     if self._is_debug():
@@ -182,3 +226,6 @@ class Machine():
             self.pointer += len(parameters) + 1
             if self.pointer > len(self.program):
                 raise StopIteration("Program ran outside memory bounds at address {}".format(self.pointer))
+
+        self.finished = True
+        return self
