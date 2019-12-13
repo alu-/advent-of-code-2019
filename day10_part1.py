@@ -2,7 +2,6 @@
 from enum import Enum
 from math import atan2, degrees, sqrt
 
-
 class Map(Enum):
     ASTEROID    = "#"
     EMPTY_SPACE = "."
@@ -14,74 +13,48 @@ def main():
     with open("./inputs/day10.txt") as file:
         raw_input = file.read().splitlines()
 
-    starmap = list(map(list, raw_input))
-    scores = {}
-    for x, row in enumerate(starmap):
-        for y, cell in enumerate(row):
-            if cell is Map.ASTEROID:
-                if not x in scores:
-                    scores[x] = {}
-                scores[x].update({y: find_score(x, y, raw_input)})
+    starmap = map(list, raw_input)
+    asteroids = [(x, y) for x, r in enumerate(starmap) for y, a in enumerate(r) if a == Map.ASTEROID]
+    _, score = find_best_position_and_score(asteroids)
+    print(score)
 
+
+def find_best_position_and_score(asteroids):
     highest_score = 0
-    for x, r in scores.items():
-        for y, a in r.items():
-            if len(a) > highest_score:
-                highest_score = len(a)
+    best_position = ()
+    for asteroid in asteroids:
+        score = find_score(asteroid[0], asteroid[1], asteroids)
+        if score > highest_score:
+            highest_score = score
+            best_position = asteroid
 
-    print(highest_score)
+    return best_position, highest_score
 
 
-def find_score(origin_x, origin_y, starmap):
+def find_score(origin_x, origin_y, asteroids):
     position_data = []
-    for x, row in enumerate(starmap):
-        for y, cell in enumerate(row):
-            if x == origin_x and y == origin_y:
-                continue
+    for asteroid in asteroids:
+        if asteroid[0] == origin_x and asteroid[1] == origin_y:
+            continue
 
-            if cell is Map.ASTEROID:
-                angle = atan2((y - origin_y), (x - origin_x))
-                position_data.append({
-                    'name': '{},{}'.format(x, y),
-                    'degrees': '{0:.5f}'.format(degrees(angle)),
-                    'distance': sqrt( ((origin_x-x)**2)+((origin_y-y)**2) )
-                })
+        angle = atan2((asteroid[1] - origin_y), (asteroid[0] - origin_x))
+        position_data.append({
+            'name': '{},{}'.format(asteroid[0], asteroid[1]),
+            'degrees': '{0:.5f}'.format(degrees(angle)),
+            'distance': sqrt(((origin_x - asteroid[0]) ** 2) + ((origin_y - asteroid[1]) ** 2))
+        })
 
-    return filter_blocked_asteroids(position_data)
+    return count_angles(position_data)
 
 
-def filter_blocked_asteroids(asteroids):
+def count_angles(asteroids):
     by_angles = {}
-    for a in asteroids:
-        if a['degrees'] not in by_angles:
-            by_angles[a['degrees']] = []
-        by_angles[a['degrees']].append(a)
+    for asteroid in asteroids:
+        if asteroid['degrees'] not in by_angles:
+            by_angles[asteroid['degrees']] = []
+        by_angles[asteroid['degrees']].append(asteroid)
 
-    filter_asteroids = []
-    for _, a in by_angles.items():
-        for asteroid in a:
-            for other_asteroid in a:
-                if asteroid['name'] == other_asteroid['name']:
-                    continue
-
-                if asteroid['distance'] > other_asteroid['distance']:
-                    if asteroid['name'] not in filter_asteroids:
-                        filter_asteroids.append(asteroid['name'])
-                else:
-                    if other_asteroid['name'] not in filter_asteroids:
-                        filter_asteroids.append(other_asteroid['name'])
-
-    return [a for a in asteroids if not a['name'] in filter_asteroids]
-
-
-def display_map(starmap, score=None):
-    for x, row in enumerate(starmap):
-        for y, cell in enumerate(row):
-            if x in score and y in score[x]:
-                print(len(score[x][y]), end="")
-            else:
-                print(cell, end="")
-        print()
+    return len(by_angles)
 
 
 if __name__ == '__main__':
