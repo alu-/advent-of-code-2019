@@ -21,7 +21,7 @@ class Instruction(Enum):
         return self.value
 
 class Machine():
-    def __init__(self, program, debug=False, interactive=True, stdin=None):
+    def __init__(self, program, debug=False, interactive=True, stdin=[]):
         self.program = self._parse(program)
         self.extended_memory = {}
         self.relative_offset = 0
