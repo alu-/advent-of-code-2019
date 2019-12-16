@@ -7,17 +7,11 @@ def main():
     with open("./inputs/day13.txt") as file:
         raw_input = file.read()
 
+    raw_input = "2{}".format(raw_input[1:])
+
     vm = Machine(raw_input)
     screen = Screen(vm)
-    screen.run(interactive=False)
-    output = screen.get_output_buffer()
-
-    glyphs = []
-    for x, r in output.items():
-        for y, c in r.items():
-            glyphs.append(c)
-
-    print(glyphs.count(2))
+    screen.run(interactive=True)
 
 
 if __name__ == '__main__':

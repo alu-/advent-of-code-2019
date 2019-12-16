@@ -72,6 +72,9 @@ class Machine():
     def _set_stdout(self, stdout):
         self.stdout.append(str(stdout))
 
+    def has_stdout(self):
+        return len(self.stdout) > 0
+
     def get_stdout(self):
         out = ",".join(self.stdout)
         self.stdout = []
