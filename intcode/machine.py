@@ -28,7 +28,7 @@ class Machine():
         self.debug = debug
         self.interactive = interactive
         self.stdin = stdin
-        self.stdout = ""
+        self.stdout = []
         self.paused = False
         self.finished = False
         self.pointer = 0
@@ -70,11 +70,11 @@ class Machine():
         return self.interactive
 
     def _set_stdout(self, stdout):
-        self.stdout += str(stdout)
+        self.stdout.append(str(stdout))
 
     def get_stdout(self):
-        out = self.stdout
-        self.stdout = ""
+        out = ",".join(self.stdout)
+        self.stdout = []
         return out
 
     def _has_input(self):
@@ -91,6 +91,9 @@ class Machine():
 
     def give_stdin(self, stdin):
         self.stdin.append(stdin)
+
+    def set_interactive(self, interactive):
+        self.interactive = interactive
 
     def dump_memory(self, heading):
         os.remove("memory.csv")

@@ -45,6 +45,12 @@ def main():
     child.expect(pexpect.EOF)
     print("Passed")
 
+    print("Test: day13_part1.py ... ", end="")
+    child = pexpect.spawn(wrapper.format("day13_part1.py"))
+    child.expect("277", timeout=5)
+    child.expect(pexpect.EOF)
+    print("Passed")
+
     print("All done.")
 
 
